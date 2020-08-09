@@ -33,13 +33,39 @@ Theta2_grad = zeros(size(Theta2));
 % ====================== YOUR CODE HERE ======================
 % Instructions: You should complete the code by working through the
 %               following parts.
-%
-% Part 1: Feedforward the neural network and return the cost in the
+
+
+%% Part 1: Feedforward the neural network and return the cost in the
 %         variable J. After implementing Part 1, you can verify that your
 %         cost function computation is correct by verifying the cost
 %         computed in ex4.m
-%
-% Part 2: Implement the backpropagation algorithm to compute the gradients
+
+X = [ones(m,1) X]; % 5000x1 
+z2 = Theta1 * X' % 25x401 * 401x5000 = 25x5000
+a2 = sigmoid(z2); % 25x5000
+
+a2 = [ones(m, 1) a2'] % 26x5000
+z3 = Theta2 * a2'; % 10x26 * 26x5000 = 10x5000
+a3 = sigmoid(z3); %10x5000
+
+h_x = a3;
+
+% now we need to recode the labels as vectors containing only 0 or 1
+for i = 1:m
+    y_new(y(i),i) = 1;
+end
+
+J = (1/m) * sum ( sum ( (-y_new) .* log(h_x) - (1-y_new) .* log(1-h_x) ));
+
+% For Regularized cost function
+
+% We do not need to regularize the first column of thetas
+Th1 = Theta1(:, 2:size(Theta1,2));
+Th2 = Theta2(:, 2:size(Theta2,2));
+RegTerm = (lambda/(2*m)) * ((sum(sum(Th1.^2))) + sum(sum(Th2.^2)));
+J = J + RegTerm;
+
+%% Part 2: Implement the backpropagation algorithm to compute the gradients
 %         Theta1_grad and Theta2_grad. You should return the partial derivatives of
 %         the cost function with respect to Theta1 and Theta2 in Theta1_grad and
 %         Theta2_grad, respectively. After implementing Part 2, you can check
@@ -54,7 +80,37 @@ Theta2_grad = zeros(size(Theta2));
 %               over the training examples if you are implementing it for the 
 %               first time.
 %
-% Part 3: Implement regularization with the cost function and gradients.
+
+% for loop from 1 to m
+for t = 1:m
+    
+    % Step 1
+    a1 = X(t,:); % 1x401
+    z2 = Theta1 * a1'; % 25x401 * 401x1
+    a2 = sigmoid(z2); % 25x1
+    
+    a2 = [1; a2]; % 26x1 adding bias
+    z3 = Theta2 * a2;
+    a3 = sigmoid(z3);
+    
+    % Step 2
+    delta_3 = a3 - y_new(:,t);
+    z2 = [1;z2]; % bias 26x1
+    
+    % Step 3
+    delta_2 = (Theta2' * delta_3) .* (sigmoidGradient(z2));
+    
+    % Step 4 
+    delta_2 = delta_2(2:end); % Removing delta 2
+    Theta2_grad = Theta2_grad + delta_3 * a2'; % 10x1 * 1x26
+	Theta1_grad = Theta1_grad + delta_2 * a1; % 25x1 * 1x401
+end
+
+% Unreguarized gradient
+Theta2_grad = (1/m) * Theta2_grad;
+Theta1_grad = (1/m) * Theta1_grad;
+
+%% Part 3: Implement regularization with the cost function and gradients.
 %
 %         Hint: You can implement this around the code for
 %               backpropagation. That is, you can compute the gradients for
@@ -62,11 +118,11 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+Theta1_grad(:, 2:end) = Theta1_grad(:, 2:end) + ((lambda/m) * Theta1(:, 2:end));
+Theta2_grad(:, 2:end) = Theta2_grad(:, 2:end) + ((lambda/m) * Theta2(:, 2:end));
 
-
-
-
-
+% Unroll gradients
+grad = [Theta1_grad(:) ; Theta2_grad(:)];
 
 
 
