@@ -37,18 +37,6 @@ for i = 1:length(C_list)
         
         model = svmTrain(X, y, C_test, @(x1, x2) gaussianKernel(x1, x2, sigma_test)); 
         
-        predictions = svmPredict(model, Xval);
-        prediction_error(i, j) = mean(double(predictions ~= yval));
-        
-        result(row,:) = [prediction_error(i,j), C_test, sigma_test];
-        row = row+1;
-    end
-end
-
-sorted_result = sortrows(result, 1);
-
-C = sorted_result(1,2);
-sigma = sorted_result(1,3);
 
 
 
