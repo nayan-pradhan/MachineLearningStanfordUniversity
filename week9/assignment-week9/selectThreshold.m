@@ -27,7 +27,7 @@ for epsilon = min(pval):stepsize:max(pval)
 
     tp = sum((pred==1) & (yval==1)); % True Positive
     fp = sum((pred==1) & (yval==0)); % False Positive
-    fn = sum((pred==0) & (yval--1)); % False Negative
+    fn = sum((pred==0) & (yval==1)); % False Negative
     
     prec = tp/(tp+fp); % precision
     rec = tp/(tp+fn); % recall
